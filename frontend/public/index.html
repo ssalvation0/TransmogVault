@@ -35,12 +35,12 @@
     <!-- Performance hints -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Non-blocking font load: preload as=style + onload swap to rel=stylesheet.
-         Lighthouse counts the original <link rel=stylesheet> as render-blocking
-         (~1800ms on slow 4G). FOUT instead of FOIT — text is shown immediately
-         in fallback font, then swapped when Cinzel/Raleway arrive. -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&display=swap" /></noscript>
+    <!-- Blocking font load (back from preload+swap pattern). The non-blocking
+         pattern technically improves Lighthouse FCP but produces a visible
+         FOUT — text flashes from Times to Cinzel/Raleway, which users perceived
+         as the page "loading in pieces". Preconnect above still warms up the
+         font-server connection so the blocking fetch is fast. -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
     <link rel="dns-prefetch" href="//render.worldofwarcraft.com">
     <link rel="preconnect" href="https://render.worldofwarcraft.com" crossorigin>
