@@ -13,6 +13,7 @@ import './styles/buttons.css';
 import './styles/tooltip.css';
 import backgroundImage from './images/background.jpg';
 import ToastProvider from './components/ToastProvider';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 const LOADING_FALLBACK_STYLE = {
   padding: '140px 20px',
@@ -158,6 +159,7 @@ function App() {
           <Helmet>
             <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
           </Helmet>
+          <SpeedInsights />
           <ScrollToTop />
           <div
             className="background-image"
