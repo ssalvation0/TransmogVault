@@ -245,7 +245,7 @@ function AuthModal({ isOpen, onClose }) {
             >
                 <div className="auth-modal-image-section">
                     <img
-                        src={`${process.env.PUBLIC_URL}/images/logreg_pic.jpg`}
+                        src={`${process.env.PUBLIC_URL}/images/logreg_pic.webp`}
                         alt="World of Warcraft"
                         className="auth-modal-image"
                         onError={(e) => { e.currentTarget.style.display = 'none'; }}

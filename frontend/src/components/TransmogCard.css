@@ -127,7 +127,12 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: rgba(20, 15, 10, 0.4);
+  /* Bumped from 0.4 to 0.85 — Lighthouse contrast pass failed for Epic purple
+     (#a335ee) and other quality colors because the translucent panel let the
+     light background-image bleed through, dropping the effective contrast
+     ratio below 4.5:1. At 0.85 the panel stays consistently dark on every
+     surface. */
+  background: rgba(20, 15, 10, 0.85);
 }
 
 .card-header-row {

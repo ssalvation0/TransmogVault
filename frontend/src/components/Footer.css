@@ -155,7 +155,9 @@
   font-family: var(--font-body);
   font-size: 0.78rem;
   line-height: 1.6;
-  color: rgba(229, 211, 179, 0.42);
+  /* Bumped from 0.42 to 0.7 — Lighthouse flagged legal text contrast.
+     Still subtle enough to read as secondary content. */
+  color: rgba(229, 211, 179, 0.7);
 }
 
 .footer__legal::before {

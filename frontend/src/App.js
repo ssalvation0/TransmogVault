@@ -11,7 +11,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
 import './styles/buttons.css';
 import './styles/tooltip.css';
-import backgroundImage from './images/background.jpg';
+import backgroundImage from './images/background.webp';
 import ToastProvider from './components/ToastProvider';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 

@@ -35,14 +35,20 @@
     <!-- Performance hints -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    
+    <!-- Non-blocking font load: preload as=style + onload swap to rel=stylesheet.
+         Lighthouse counts the original <link rel=stylesheet> as render-blocking
+         (~1800ms on slow 4G). FOUT instead of FOIT — text is shown immediately
+         in fallback font, then swapped when Cinzel/Raleway arrive. -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&display=swap" /></noscript>
+
     <link rel="dns-prefetch" href="//render.worldofwarcraft.com">
     <link rel="preconnect" href="https://render.worldofwarcraft.com" crossorigin>
 
-    <!-- Wowhead tooltips -->
+    <!-- Wowhead tooltips. async — config var is set inline before, so by the
+         time power.js executes whTooltips is already on window. -->
     <script>var whTooltips = { colorLinks: false, iconizeLinks: false, renameLinks: false };</script>
-    <script src="https://wow.zamimg.com/widgets/power.js"></script>
+    <script src="https://wow.zamimg.com/widgets/power.js" async></script>
 
     <title>TransmogVault - Epic WoW Transmog Sets</title>
   </head>

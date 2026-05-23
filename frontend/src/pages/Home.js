@@ -6,9 +6,9 @@ import FeaturedSection from '../components/FeaturedSection';
 import { Helmet } from 'react-helmet-async';
 import '../styles/Home.css';
 
-const imagesContext = require.context('../images', false, /\.(png|jpe?g|svg)$/);
+const imagesContext = require.context('../images', false, /\.(png|jpe?g|svg|webp)$/);
 const imagesMap = imagesContext.keys().reduce((map, filePath) => {
-  const name = filePath.replace('./', '').replace(/\.(png|jpe?g|svg)$/, '');
+  const name = filePath.replace('./', '').replace(/\.(png|jpe?g|svg|webp)$/, '');
   map[name] = imagesContext(filePath).default || imagesContext(filePath);
   return map;
 }, {});
@@ -245,7 +245,7 @@ function Home() {
     return warcraftClasses.map((cls, idx) => {
       const slug = cls.name.toLowerCase().replace(/ /g, '');
       const imageKey = classImageMap[slug] || slug;
-      const src = imagesMap[imageKey] || `${process.env.PUBLIC_URL}/images/${imageKey}.jpg`;
+      const src = imagesMap[imageKey] || `${process.env.PUBLIC_URL}/images/${imageKey}.webp`;
       const isAboveFold = idx < 4;
 
       // Get metadata
@@ -341,7 +341,7 @@ function Home() {
               style={{ '--card-index': warcraftClasses.length }}
             >
               <ProfileCard
-                avatarUrl={imagesMap['catalog'] || `${process.env.PUBLIC_URL}/images/catalog.jpg`}
+                avatarUrl={imagesMap['catalog'] || `${process.env.PUBLIC_URL}/images/catalog.webp`}
                 name="Full Catalog"
                 title="All Collections"
                 contactText="Explore"
@@ -362,7 +362,7 @@ function Home() {
               style={{ '--card-index': warcraftClasses.length + 1 }}
             >
               <ProfileCard
-                avatarUrl={imagesMap['random'] || `${process.env.PUBLIC_URL}/images/random.jpg`}
+                avatarUrl={imagesMap['random'] || `${process.env.PUBLIC_URL}/images/random.webp`}
                 name="Feeling Lucky?"
                 title="Random Discovery"
                 contactText="Randomize"

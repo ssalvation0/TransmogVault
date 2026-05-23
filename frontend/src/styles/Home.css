@@ -603,6 +603,13 @@
   opacity: 0;
   transform: translateY(60px);
   transition: none;
+  /* Skip paint + layout for offscreen cards so the browser doesn't decode
+     all 14 class images + run the tilt/gradient pipeline on entry. Lighthouse
+     reported a long task here when scrolling the cards into view.
+     contain-intrinsic-size reserves space (≈400px tall card) so scrollbar
+     doesn't jump as cards become visible and get their real size. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
 }
 
 .cards-grid.animate .card-item {
@@ -700,7 +707,7 @@
 .hero-parallax {
   position: absolute;
   inset: -12% -8% -8% -8%;
-  background-image: url('../images/catalog.jpg');
+  background-image: url('../images/catalog.webp');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center calc(50% + (var(--hero-parallax, 0) * 0.25px));
