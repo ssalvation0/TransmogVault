@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs').promises;
 const path = require('path');
-const blizzardService = require('../utils/blizzardService');
-const { generateSetGuide } = require('../utils/geminiService');
 const { fetchAllTransmogSets, fetchOneItem } = require('../utils/wowheadService');
 const { expectedArmorType } = require('../utils/setClassify');
 
@@ -409,15 +407,24 @@ router.get('/filters', (req, res) => {
   });
 });
 
-// Batch fetch transmogs by IDs
+// Batch fetch transmogs by IDs. Capped at 100 — the largest legit consumer
+// (collections / recently-viewed) asks for a few dozen; an uncapped list
+// made each request an O(ids × sets) scan, cheap to abuse.
+const BATCH_MAX_IDS = 100;
+
 router.get('/batch', async (req, res) => {
-  const ids = (req.query.ids || '').split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+  const ids = (req.query.ids || '')
+    .split(',')
+    .map(id => parseInt(id, 10))
+    .filter(id => !isNaN(id))
+    .slice(0, BATCH_MAX_IDS);
 
   if (ids.length === 0) {
     return res.json([]);
   }
 
-  const results = cachedSets.filter(s => ids.includes(s.id));
+  const idSet = new Set(ids);
+  const results = cachedSets.filter(s => idSet.has(s.id));
 
   const enriched = results.map(set => ({
     ...set,
@@ -437,11 +444,18 @@ function parseMulti(raw) {
   return list.length > 0 ? list : null;
 }
 
+// Unknown expansions (indexOf === -1) sort to the END, not before Classic —
+// `indexOf || 0` kept -1 as-is because -1 is truthy.
+const expansionRank = (e) => {
+  const i = EXPANSION_ORDER.indexOf(e);
+  return i === -1 ? EXPANSION_ORDER.length : i;
+};
+
 const SORT_COMPARATORS = {
   'name-asc':       (a, b) => a.name.localeCompare(b.name),
   'name-desc':      (a, b) => b.name.localeCompare(a.name),
-  'expansion-asc':  (a, b) => (EXPANSION_ORDER.indexOf(a.expansion) || 0) - (EXPANSION_ORDER.indexOf(b.expansion) || 0),
-  'expansion-desc': (a, b) => (EXPANSION_ORDER.indexOf(b.expansion) || 0) - (EXPANSION_ORDER.indexOf(a.expansion) || 0),
+  'expansion-asc':  (a, b) => expansionRank(a.expansion) - expansionRank(b.expansion),
+  'expansion-desc': (a, b) => expansionRank(b.expansion) - expansionRank(a.expansion),
   'id-asc':         (a, b) => a.id - b.id,
   'id-desc':        (a, b) => b.id - a.id,
 };
@@ -477,10 +491,16 @@ router.get('/', async (req, res) => {
   const favoriteIds   = parseMulti(favorites)?.map(Number).filter(Number.isFinite);
 
   if (classList) {
-    const lower = classList.map(c => c.toLowerCase());
+    // Space-insensitive compare: the Home class cards / onboarding wizard
+    // historically navigate with slugs ("deathknight"), while our data and
+    // the catalog dropdown use full names ("Death Knight"). Normalizing both
+    // sides means every form matches; without it, two-word classes returned
+    // only generic "All" sets.
+    const normClass = (c) => c.toLowerCase().replace(/\s+/g, '');
+    const wanted = classList.map(normClass);
     results = results.filter(s =>
       s.classes.includes('All') ||
-      s.classes.some(c => lower.includes(c.toLowerCase()))
+      s.classes.some(c => wanted.includes(normClass(c)))
     );
   }
 
@@ -515,8 +535,11 @@ router.get('/', async (req, res) => {
   results = [...results].sort(cmp);
 
   // ── Paginate ──────────────────────────────────────────────────────────
-  const pageNum = parseInt(page, 10);
-  const limitNum = parseInt(limit, 10);
+  // Clamp: NaN/negative page → 0; limit forced into [1, 100]. Unclamped,
+  // ?limit=0 produced totalPages: Infinity (→ null in JSON) and a huge limit
+  // dumped the entire catalog in one response.
+  const pageNum = Math.max(0, parseInt(page, 10) || 0);
+  const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
   const start = pageNum * limitNum;
   const paginated = results.slice(start, start + limitNum);
 

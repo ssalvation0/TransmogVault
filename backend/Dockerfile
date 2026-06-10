@@ -23,9 +23,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8080
 
-# Copy installed node_modules and source.
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+# Copy installed node_modules and source. --chown so the `node` user the
+# process runs as can write to data/ (cache save-back) — plain COPY leaves
+# files root-owned and saveCache() fails with EACCES.
+COPY --from=deps --chown=node:node /app/node_modules ./node_modules
+COPY --chown=node:node . .
 
 # Fly.io expects the listener on the port it injects via $PORT.
 EXPOSE 8080

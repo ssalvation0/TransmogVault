@@ -42,13 +42,17 @@ export function FavoritesProvider({ children }) {
     getFavorites(user.id)
       .then(async (dbIds) => {
         if (!mounted) return;
-        const localIds = getLocalFavorites();
+        // Normalize both sides to strings — if the DB column is numeric the
+        // includes() check silently never matches and every login re-uploads
+        // all local favorites as duplicates.
+        const dbStringIds = toStringIds(dbIds);
+        const localIds = toStringIds(getLocalFavorites());
         // Merge: upload any local items not yet in DB
-        const toUpload = localIds.filter(id => !dbIds.includes(id));
+        const toUpload = localIds.filter(id => !dbStringIds.includes(id));
         if (toUpload.length > 0) {
           await Promise.allSettled(toUpload.map(id => addFavorite(user.id, id)));
         }
-        const merged = [...new Set([...dbIds, ...localIds])];
+        const merged = [...new Set([...dbStringIds, ...localIds])];
         setLocalFavorites(merged);
         setFavorites(merged);
         setSynced(true);

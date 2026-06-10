@@ -121,7 +121,21 @@ function Settings() {
         throw new Error(uploadError.message || 'Avatar upload failed.');
       }
       const { data: publicData } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+      const prevUrl = user.avatarUrl;
       await updateProfile({ ...currentProfileData(), avatarUrl: publicData?.publicUrl || null });
+      // Best-effort cleanup of the replaced avatar — every upload writes a
+      // new timestamped file, so without this the bucket accumulates one
+      // orphan per change. Only touch files inside our own bucket AND our
+      // own user folder; external URLs (e.g. Google OAuth avatars) skipped.
+      const bucketMarker = `/storage/v1/object/public/${AVATAR_BUCKET}/`;
+      if (prevUrl && prevUrl.includes(bucketMarker)) {
+        const oldPath = decodeURIComponent(prevUrl.split(bucketMarker)[1] || '').split('?')[0];
+        if (oldPath && oldPath.startsWith(`${user.id}/`) && oldPath !== path) {
+          supabase.storage.from(AVATAR_BUCKET).remove([oldPath]).then(({ error: rmErr }) => {
+            if (rmErr) console.warn('[avatar] old file cleanup failed', rmErr);
+          });
+        }
+      }
       setAvatarFile(null);
       setFeedback('avatar', 'success', 'Avatar updated!');
       setExpanded(null);

@@ -34,7 +34,7 @@ if (process.env.SENTRY_DSN) {
 
 const express = require('express');
 const cors = require('cors');
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const transmogsRouter = require('./routes/transmogs');
 
 const app = express();
@@ -63,7 +63,7 @@ app.use(cors({
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true,
+  // No `credentials` — the API is anonymous JSON, no cookies/auth headers.
 }));
 
 app.use(express.json());
@@ -77,10 +77,26 @@ app.set('trust proxy', 1);
 
 app.use('/api/', rateLimit({
   windowMs: 60 * 1000,      // 1-minute rolling window
-  max: 300,                  // 300 requests/minute per IP
+  max: 300,                  // 300 requests/minute per client
   standardHeaders: true,     // sends RateLimit-* response headers
   legacyHeaders: false,
   message: { error: 'Too many requests, please slow down.' },
+  // Key on the ORIGINAL client, not req.ip. Production traffic arrives via
+  // the Vercel rewrite (client → Vercel → Fly), so req.ip resolves to
+  // Vercel's egress IP — meaning every legit user shared a handful of
+  // 300/min buckets and would collectively hit 429 under load. Vercel
+  // forwards the real client in `x-vercel-forwarded-for`; use its first
+  // entry when present. Tradeoff: a client hitting fly.dev directly can
+  // spoof this header to dodge per-IP limiting — acceptable for a public
+  // read-only JSON API where the limiter exists to curb casual scraping,
+  // not targeted abuse (Fly's own connection limits cap the blast radius).
+  keyGenerator: (req) => {
+    const xvff = req.headers['x-vercel-forwarded-for'];
+    if (typeof xvff === 'string' && xvff.length > 0 && xvff.length < 100) {
+      return xvff.split(',')[0].trim();
+    }
+    return ipKeyGenerator(req.ip);
+  },
 }));
 
 // Routes

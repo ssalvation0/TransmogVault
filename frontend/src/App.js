@@ -128,12 +128,12 @@ function App() {
     "@type": "WebSite",
     "name": "TransmogVault",
     "description": "Browse and explore epic World of Warcraft transmog sets. Find inspiration for your character's style.",
-    "url": "https://wickless-actively-nora.ngrok-free.dev",
+    "url": "https://transmogvault.vercel.app",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
         "@type": "EntryPoint",
-        "urlTemplate": "https://wickless-actively-nora.ngrok-free.dev/catalog?search={search_term_string}"
+        "urlTemplate": "https://transmogvault.vercel.app/catalog?search={search_term_string}"
       },
       "query-input": "required name=search_term_string"
     }

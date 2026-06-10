@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { useToast } from '../components/ToastProvider';
 import { useFavorites } from '../contexts/FavoritesContext';
 import RecentlyViewed from '../components/RecentlyViewed';
@@ -118,7 +118,10 @@ function Catalog() {
       sort: sortBy,
       favoriteIds: stableFavorites,
     }),
-    keepPreviousData: true,
+    // v5 API: `keepPreviousData: true` was removed in TanStack Query v5 and
+    // silently ignored — every page/filter change flashed the skeleton grid.
+    // `placeholderData: keepPreviousData` is the v5 spelling of the same idea.
+    placeholderData: keepPreviousData,
     staleTime: 30000,
   });
 

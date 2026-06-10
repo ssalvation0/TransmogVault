@@ -70,18 +70,32 @@ async function fetchOneSet(id) {
   }
 }
 
+// In-memory item-tooltip cache. Item data is immutable for our purposes
+// (name / icon / armorType never change once published), so entries never
+// expire. Without this, every /api/transmogs/:id request fired one upstream
+// Wowhead request PER ITEM (~5-9 per page view) — slow for users, a DoS
+// amplification vector, and a fast way to get the server IP blocked by
+// Wowhead. 404s are cached as null too (a missing item stays missing);
+// transient network errors are NOT cached so the next request can retry.
+// Bounded by the universe of item IDs we ever ask for (~35k tiny objects).
+const itemCache = new Map();
+
 /**
  * Fetch a single item from Wowhead's JSON tooltip endpoint.
  * Returns { id, name, icon, quality, armorType, restrictedClasses } or null.
  */
 async function fetchOneItem(id) {
+  if (itemCache.has(id)) return itemCache.get(id);
   try {
     const r = await axios.get(`${ITEM_TOOLTIP_BASE}/${id}`, {
       headers: { 'User-Agent': 'Mozilla/5.0 TransmogVault/1.0' },
       validateStatus: s => s === 200 || s === 404,
       timeout: 15000,
     });
-    if (r.status !== 200 || !r.data) return null;
+    if (r.status !== 200 || !r.data) {
+      itemCache.set(id, null);
+      return null;
+    }
     const d = r.data;
     const tooltip = d.tooltip || '';
 
@@ -97,7 +111,7 @@ async function fetchOneItem(id) {
       restrictedClasses = cls[1].split(',').map(s => s.trim()).filter(Boolean);
     }
 
-    return {
+    const item = {
       id,
       name: d.name || `Item ${id}`,
       icon: d.icon || null,
@@ -105,7 +119,10 @@ async function fetchOneItem(id) {
       armorType,
       restrictedClasses,
     };
+    itemCache.set(id, item);
+    return item;
   } catch {
+    // Transient failure (timeout, network) — deliberately not cached.
     return null;
   }
 }

@@ -11,6 +11,12 @@ primary_region = 'fra'
 
 [env]
   NODE_ENV = 'production'
+  # Serve from the cache JSONs baked into the image (committed to the repo).
+  # Without this, every deploy/restart re-scans 13,500 Wowhead tooltip IDs
+  # (~8 min, 13.5k upstream requests) on a 256MB shared VM — and the write-
+  # back fails anyway because the container FS is ephemeral. Cache refreshes
+  # ship via git commit + redeploy.
+  SKIP_HYDRATE = 'true'
 
 [http_service]
   internal_port = 8080

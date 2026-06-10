@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet-async';
 import RatingWidget from '../components/RatingWidget';
 import CommentsSection from '../components/CommentsSection';
 import AddToCollectionModal from '../components/AddToCollectionModal';
+import FallbackImage from '../components/FallbackImage';
 import { useAuth } from '../contexts/AuthContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import {
@@ -247,19 +248,18 @@ function TransmogDetail() {
         <div className="transmog-detail-content-card">
           <div className="detail-top-section">
             <div className="detail-image-wrapper">
-              {(transmog.previewUrl || transmog.iconUrl) ? (
-                <img
-                  src={transmog.previewUrl || transmog.iconUrl}
-                  alt={transmog.name}
-                  className="detail-main-icon"
-                  loading="eager"
-                  decoding="async"
-                />
-              ) : (
-                <div className="detail-icon-placeholder">
-                  <Sword size={48} opacity={0.4} />
-                </div>
-              )}
+              <FallbackImage
+                sources={[transmog.previewUrl, transmog.iconUrl]}
+                alt={transmog.name}
+                className="detail-main-icon"
+                loading="eager"
+                decoding="async"
+                placeholder={
+                  <div className="detail-icon-placeholder">
+                    <Sword size={48} opacity={0.4} />
+                  </div>
+                }
+              />
               <div className="detail-image-glow"></div>
             </div>
 
@@ -457,16 +457,13 @@ function TransmogDetail() {
                     className="similar-set-card"
                   >
                     <div className="similar-set-image">
-                      {(set.previewUrl || set.iconUrl) ? (
-                        <img
-                          src={set.previewUrl || set.iconUrl}
-                          alt={set.name}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      ) : (
-                        <div className="similar-set-placeholder"><Sword size={32} opacity={0.3} /></div>
-                      )}
+                      <FallbackImage
+                        sources={[set.previewUrl, set.iconUrl]}
+                        alt={set.name}
+                        loading="lazy"
+                        decoding="async"
+                        placeholder={<div className="similar-set-placeholder"><Sword size={32} opacity={0.3} /></div>}
+                      />
                     </div>
                     <div className="similar-set-info">
                       <h4>{set.name}</h4>

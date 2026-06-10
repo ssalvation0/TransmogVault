@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 import { useToast } from '../components/ToastProvider';
 import TransmogCard from '../components/TransmogCard';
 import { PencilSimple, Trash } from '@phosphor-icons/react';
@@ -34,6 +35,7 @@ function CollectionDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState(false);
@@ -206,7 +208,11 @@ function CollectionDetail() {
           <div className="col-sets-grid">
             {sets.map(set => (
               <div key={set.id} className="col-set-wrapper">
-                <TransmogCard transmog={set} />
+                <TransmogCard
+                  transmog={set}
+                  isFavorite={isFavorite(set.id)}
+                  onToggleFavorite={toggleFavorite}
+                />
                 {isOwner && (
                   <button
                     className="col-remove-btn"

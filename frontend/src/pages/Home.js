@@ -266,8 +266,8 @@ function Home() {
             enableTilt={true}
             enableMobileTilt={false}
             className={`class-${slug}`}
-            onClick={() => navigate(`/catalog?class=${slug}`)}
-            onContactClick={() => navigate(`/catalog?class=${slug}`)}
+            onClick={() => navigate(`/catalog?class=${encodeURIComponent(cls.name)}`)}
+            onContactClick={() => navigate(`/catalog?class=${encodeURIComponent(cls.name)}`)}
             behindGradient={`radial-gradient(farthest-side circle at var(--pointer-x) var(--pointer-y), ${accent}66 4%, ${accent}44 10%, ${accent}22 50%, transparent 100%)`}
             imageLoading={isAboveFold ? 'eager' : 'lazy'}
             imageFetchPriority={isAboveFold ? 'high' : 'low'}

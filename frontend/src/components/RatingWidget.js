@@ -11,12 +11,16 @@ function RatingWidget({ setId }) {
   const [hovered, setHovered] = useState(0);
   const [saving, setSaving] = useState(false);
 
-  const loadRatings = useCallback(async () => {
+  // `isStale` is checked after the await — when the user switches sets
+  // quickly, the unmounting effect flips its flag and the late response is
+  // dropped instead of overwriting the new set's rating.
+  const loadRatings = useCallback(async (isStale = () => false) => {
     const { data, error } = await supabase
       .from('ratings')
       .select('score, user_id')
       .eq('set_id', setId);
 
+    if (isStale()) return;
     if (error) {
       console.warn('[ratings] load failed', error);
       return;
@@ -35,7 +39,7 @@ function RatingWidget({ setId }) {
   // sets quickly can let an older response overwrite the current one.
   useEffect(() => {
     let cancelled = false;
-    (async () => { if (!cancelled) await loadRatings(); })();
+    loadRatings(() => cancelled);
     return () => { cancelled = true; };
   }, [loadRatings]);
 

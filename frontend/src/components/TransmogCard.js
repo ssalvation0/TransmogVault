@@ -40,7 +40,9 @@ const TransmogCard = ({ transmog, isFavorite, onToggleFavorite }) => {
 
     const handleFavoriteClick = useCallback((e) => {
         e.stopPropagation();
-        onToggleFavorite(transmog.id);
+        // Optional chaining: an embedding that doesn't wire favorites must
+        // not crash the whole page on a heart click.
+        onToggleFavorite?.(transmog.id);
     }, [onToggleFavorite, transmog.id]);
 
     const handleImageError = useCallback(() => {

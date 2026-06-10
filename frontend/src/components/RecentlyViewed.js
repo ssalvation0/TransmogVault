@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sword } from '@phosphor-icons/react';
+import FallbackImage from './FallbackImage';
 import './RecentlyViewed.css';
 
 const API_URL = '/api/transmogs';
@@ -107,22 +108,23 @@ function RecentlyViewed({ limit = 5 }) {
         onMouseMove={handleMouseMove}
       >
         <div className="recently-viewed-image">
-          {(transmog.previewUrl || transmog.iconUrl) ? (
-            <img
-              src={transmog.previewUrl || transmog.iconUrl}
-              alt={transmog.name}
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
-            <div className="recently-viewed-placeholder"><Sword size={32} opacity={0.3} /></div>
-          )}
+          <FallbackImage
+            sources={[transmog.previewUrl, transmog.iconUrl]}
+            alt={transmog.name}
+            loading="lazy"
+            decoding="async"
+            placeholder={<div className="recently-viewed-placeholder"><Sword size={32} opacity={0.3} /></div>}
+          />
         </div>
         <div className="recently-viewed-info">
           <h3>{transmog.name}</h3>
-          <span className={`class-badge ${transmog.class?.toLowerCase().replace(' ', '')}`}>
-            {transmog.class}
-          </span>
+          {/* Backend sends `classes` (array), not `class` — the old singular
+              field rendered a permanently-empty badge pill. */}
+          {transmog.classes?.[0] && transmog.classes[0] !== 'All' && (
+            <span className={`class-badge ${transmog.classes[0].toLowerCase().replace(/\s+/g, '')}`}>
+              {transmog.classes[0]}
+            </span>
+          )}
         </div>
       </div>
     ));

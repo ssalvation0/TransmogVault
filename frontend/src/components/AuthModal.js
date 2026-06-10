@@ -304,6 +304,7 @@ function AuthModal({ isOpen, onClose }) {
                                             onChange={(e) => setName(e.target.value)}
                                             placeholder="Your name"
                                             required
+                                            maxLength={40}
                                         />
                                     </div>
                                 </Step>
@@ -334,7 +335,7 @@ function AuthModal({ isOpen, onClose }) {
                                                 {showPassword ? <IconEyeOff /> : <IconEye />}
                                             </button>
                                         </div>
-                                        <p className="password-hint">Minimum 6 characters</p>
+                                        <p className="password-hint">At least 8 characters, with letters and numbers</p>
                                     </div>
                                 </Step>
 

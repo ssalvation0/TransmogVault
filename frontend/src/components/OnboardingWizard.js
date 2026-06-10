@@ -25,10 +25,13 @@ function OnboardingWizard({ isOpen, onClose }) {
 
     if (!isOpen) return null;
 
+    // Navigate with the full class name (URL-encoded), not the slug — the
+    // catalog's class <select> options are full names, so a slug like
+    // "deathknight" left the dropdown stuck on "All Classes" while a hidden
+    // filter was active. The backend matches both forms either way.
     const handleClassClick = (className) => {
-        const slug = className.toLowerCase().replace(/ /g, '');
         onClose();
-        navigate(`/catalog?class=${slug}`);
+        navigate(`/catalog?class=${encodeURIComponent(className)}`);
     };
 
     return (
