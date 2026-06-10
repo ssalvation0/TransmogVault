@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
  * TransmogCard has its own inline version of this logic; this component
  * covers the other thumbnails (detail hero, similar sets, recently viewed).
  */
-function FallbackImage({ sources, placeholder = null, ...imgProps }) {
+function FallbackImage({ sources, placeholder = null, alt = '', ...imgProps }) {
   const candidates = (sources || []).filter(Boolean);
   const [index, setIndex] = useState(0);
 
@@ -22,6 +22,7 @@ function FallbackImage({ sources, placeholder = null, ...imgProps }) {
   return (
     <img
       src={candidates[index]}
+      alt={alt}
       onError={() => setIndex(i => i + 1)}
       {...imgProps}
     />
